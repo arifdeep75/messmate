@@ -7,14 +7,38 @@ import clientPromise from "@/lib/mongo";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const configuredOrigins = [
+const configuredURLs = [
   process.env.BETTER_AUTH_URL,
   process.env.NEXT_PUBLIC_APP_URL,
-].flatMap((value) => (value ? [new URL(value).origin] : []));
+].filter((value): value is string => Boolean(value));
+const configuredOrigins = [...new Set(configuredURLs.map((value) => {
+  const url = new URL(value);
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new Error("Better Auth URLs must use HTTP or HTTPS.");
+  }
+  return url.origin;
+}))];
+
+if (
+  process.env.NODE_ENV === "production" &&
+  !process.env.BETTER_AUTH_URL &&
+  !process.env.NEXT_PUBLIC_APP_URL
+) {
+  throw new Error("Set BETTER_AUTH_URL or NEXT_PUBLIC_APP_URL in production.");
+}
+
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.BETTER_AUTH_URL &&
+  process.env.NEXT_PUBLIC_APP_URL &&
+  new URL(process.env.BETTER_AUTH_URL).origin !==
+    new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+) {
+  throw new Error("BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL must use the same production origin.");
+}
+
 const configuredBaseURL =
-  process.env.BETTER_AUTH_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  "http://localhost:3000";
+  configuredOrigins[0] || "http://localhost:3000";
 
 export const auth = betterAuth({
   baseURL:
