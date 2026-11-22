@@ -3,14 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, LayoutDashboard, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import {
+  Bell,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  ShieldCheck,
+  UserRound,
+  Utensils,
+  Users,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 
 export default function Navbar() {
   const router = useRouter();
-  const menuRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const isAdmin = session?.user.role === "admin";
   const profileHref = isAdmin ? "/admin/profile" : "/dashboard/profile";
@@ -25,17 +36,26 @@ export default function Navbar() {
     .join("")
     .toUpperCase();
 
+  function closeMenus() {
+    setMenuOpen(false);
+    setMobileMenuOpen(false);
+  }
+
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !mobileMenuOpen) return;
 
     function closeOutside(event: PointerEvent) {
-      if (event.target instanceof Node && !menuRef.current?.contains(event.target)) {
+      if (event.target instanceof Node && !navRef.current?.contains(event.target)) {
         setMenuOpen(false);
+        setMobileMenuOpen(false);
       }
     }
 
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
     }
 
     document.addEventListener("pointerdown", closeOutside);
@@ -44,13 +64,14 @@ export default function Navbar() {
       document.removeEventListener("pointerdown", closeOutside);
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [menuOpen]);
+  }, [menuOpen, mobileMenuOpen]);
 
   async function handleSignOut() {
     try {
       const { error } = await authClient.signOut();
       if (error) throw new Error(error.message || "Sign out failed.");
       setMenuOpen(false);
+      setMobileMenuOpen(false);
       toast.success("Signed out successfully.");
       router.replace("/");
       router.refresh();
@@ -61,63 +82,66 @@ export default function Navbar() {
 
   const linkStyle =
     "text-sm font-medium text-zinc-400 transition-colors hover:text-[#CCFF00]";
+  const primaryLinks = [
+    { href: "/", label: "Home" },
+    { href: "/meals", label: "Meals", icon: Utensils },
+    { href: "/bazar", label: "Bazar" },
+    { href: "/members", label: "Members", icon: Users },
+    { href: "/notices", label: "Notices", icon: Bell },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#292D35] bg-[#0B0D10]/95 backdrop-blur-xl">
+    <header
+      ref={navRef}
+      className="sticky top-0 z-50 border-b border-[#292D35] bg-[#0B0D10]/95 backdrop-blur-xl"
+    >
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#CCFF00] text-lg font-black text-[#0B0D10]">
             M
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">
+          <span className="text-lg font-bold tracking-tight text-white sm:text-xl">
             Mess<span className="text-[#CCFF00]">Mate</span>
           </span>
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <Link href="/" className={linkStyle}>Home</Link>
-          <Link href="/meals" className={linkStyle}>Meals</Link>
-          <Link href="/bazar" className={linkStyle}>Bazar</Link>
-          <Link href="/members" className={linkStyle}>Members</Link>
-          <Link href="/notices" className={linkStyle}>Notices</Link>
+        <div className="hidden items-center gap-6 lg:flex xl:gap-8">
+          {primaryLinks.map(({ href, label }) => (
+            <Link key={href} href={href} className={linkStyle}>
+              {label}
+            </Link>
+          ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden items-center gap-3 lg:flex">
           {isPending ? (
             <span className="text-sm text-zinc-500" role="status">Loading session...</span>
           ) : session ? (
-            <div className="relative" ref={menuRef}>
+            <div className="relative">
               <button
                 type="button"
-                onClick={() => setMenuOpen((open) => !open)}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setMenuOpen((open) => !open);
+                }}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
-                aria-label="Open profile menu"
-                className="flex max-w-[min(70vw,18rem)] items-center gap-2 rounded-xl border border-[#292D35] bg-[#12151A] px-2 py-1.5 text-left transition hover:border-[#CCFF00]/60 sm:gap-3 sm:px-3"
+                aria-label={`Open ${name}'s profile menu`}
+                title={name}
+                className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[#CCFF00]/30 bg-[#12151A] text-sm font-bold text-[#CCFF00] transition hover:border-[#CCFF00]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 text-sm font-bold text-[#CCFF00]">
-                  {image ? (
-                    <span
-                      aria-label={`${name} profile image`}
-                      role="img"
-                      className="h-full w-full bg-cover bg-center"
-                      style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
-                    />
-                  ) : initials ? (
-                    initials
-                  ) : (
-                    <UserRound size={18} />
-                  )}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-white">{name}</span>
-                  {isAdmin && (
-                    <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-[#CCFF00]">
-                      <ShieldCheck size={11} /> Admin
-                    </span>
-                  )}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-zinc-500" />
+                {image ? (
+                  <span
+                    aria-label={`${name} profile image`}
+                    role="img"
+                    className="h-full w-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
+                  />
+                ) : initials ? (
+                  initials
+                ) : (
+                  <UserRound size={18} />
+                )}
               </button>
 
               {menuOpen && (
@@ -133,7 +157,7 @@ export default function Navbar() {
                   <Link
                     href={dashboardHref}
                     role="menuitem"
-                    onClick={() => setMenuOpen(false)}
+                    onClick={closeMenus}
                     className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
                   >
                     {isAdmin ? <ShieldCheck size={17} /> : <LayoutDashboard size={17} />}
@@ -142,7 +166,7 @@ export default function Navbar() {
                   <Link
                     href={profileHref}
                     role="menuitem"
-                    onClick={() => setMenuOpen(false)}
+                    onClick={closeMenus}
                     className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
                   >
                     <UserRound size={17} /> My Profile
@@ -175,7 +199,111 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMenuOpen(false);
+            setMobileMenuOpen((open) => !open);
+          }}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation"
+          aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#292D35] text-white transition hover:border-[#CCFF00] hover:text-[#CCFF00] lg:hidden"
+        >
+          {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+        </button>
       </nav>
+
+      {mobileMenuOpen && (
+        <div
+          id="mobile-navigation"
+          className="border-t border-[#292D35] bg-[#0B0D10] px-4 py-3 sm:px-6 lg:hidden"
+        >
+          <nav aria-label="Mobile navigation" className="mx-auto max-w-7xl">
+            <div className="grid gap-1">
+              {primaryLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={closeMenus}
+                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
+                >
+                  {Icon ? <Icon size={17} /> : <span className="w-[17px]" />}
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            {!isPending && (
+              <div className="mt-3 border-t border-[#292D35] pt-3">
+                {session ? (
+                  <>
+                    <div className="mb-1 flex items-center gap-3 px-3 pb-2">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 text-xs font-bold text-[#CCFF00]">
+                        {image ? (
+                          <span
+                            aria-label={`${name} profile image`}
+                            role="img"
+                            className="h-full w-full bg-cover bg-center"
+                            style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
+                          />
+                        ) : (
+                          initials || <UserRound size={16} />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium text-zinc-400">
+                        {isAdmin ? "Administrator" : "Member account"}
+                      </span>
+                    </div>
+                    <Link
+                      href={dashboardHref}
+                      onClick={closeMenus}
+                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
+                    >
+                      {isAdmin ? <ShieldCheck size={17} /> : <LayoutDashboard size={17} />}
+                      {dashboardLabel}
+                    </Link>
+                    <Link
+                      href={profileHref}
+                      onClick={closeMenus}
+                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
+                    >
+                      <UserRound size={17} />
+                      My Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-red-400 transition hover:bg-red-500/10"
+                    >
+                      <LogOut size={17} />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      href="/login"
+                      onClick={closeMenus}
+                      className="flex min-h-11 items-center justify-center rounded-lg border border-[#292D35] px-4 text-sm font-semibold text-white transition hover:border-[#CCFF00] hover:text-[#CCFF00]"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={closeMenus}
+                      className="flex min-h-11 items-center justify-center rounded-lg bg-[#CCFF00] px-4 text-sm font-bold text-[#0B0D10] transition hover:bg-[#b8e600]"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

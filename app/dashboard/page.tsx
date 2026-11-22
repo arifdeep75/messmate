@@ -11,8 +11,6 @@ import {
 } from "lucide-react";
 
 import { getCurrentSession } from "@/lib/auth";
-import SignOutButton from "./sign-out-button";
-import Link from "next/link";
 import clientPromise from "@/lib/mongo";
 import { dhakaDateString, getMonthlySummary, monthRange } from "@/lib/messmate";
 
@@ -89,10 +87,6 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard/profile" className="rounded-lg border border-[#292D35] px-4 py-2 text-sm font-semibold hover:border-[#CCFF00]">Edit Profile</Link>
-            <SignOutButton />
-          </div>
         </div>
 
         {!isApprovedMember && (
