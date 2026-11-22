@@ -89,6 +89,41 @@ export default function Navbar() {
     { href: "/members", label: "Members", icon: Users },
     { href: "/notices", label: "Notices", icon: Bell },
   ];
+  const profileMenu = (
+    <>
+      <div className="border-b border-[#292D35] px-3 py-2.5">
+        <p className="truncate text-sm font-semibold text-white">{name}</p>
+        <p className="text-xs font-medium text-zinc-500">
+          {isAdmin ? "Administrator" : "Member account"}
+        </p>
+      </div>
+      <Link
+        href={dashboardHref}
+        role="menuitem"
+        onClick={closeMenus}
+        className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
+      >
+        {isAdmin ? <ShieldCheck size={17} /> : <LayoutDashboard size={17} />}
+        {dashboardLabel}
+      </Link>
+      <Link
+        href={profileHref}
+        role="menuitem"
+        onClick={closeMenus}
+        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
+      >
+        <UserRound size={17} /> My Profile
+      </Link>
+      <button
+        type="button"
+        role="menuitem"
+        onClick={handleSignOut}
+        className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10"
+      >
+        <LogOut size={17} /> Sign Out
+      </button>
+    </>
+  );
 
   return (
     <header
@@ -150,35 +185,7 @@ export default function Navbar() {
                   aria-label="Profile menu"
                   className="absolute right-0 top-[calc(100%+0.65rem)] z-[60] w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#292D35] bg-[#12151A] p-2 shadow-2xl shadow-black/50"
                 >
-                  <div className="border-b border-[#292D35] px-3 py-2.5">
-                    <p className="truncate text-sm font-semibold text-white">{name}</p>
-                    <p className="text-xs font-medium text-zinc-500">{isAdmin ? "Administrator" : "Member account"}</p>
-                  </div>
-                  <Link
-                    href={dashboardHref}
-                    role="menuitem"
-                    onClick={closeMenus}
-                    className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
-                  >
-                    {isAdmin ? <ShieldCheck size={17} /> : <LayoutDashboard size={17} />}
-                    {dashboardLabel}
-                  </Link>
-                  <Link
-                    href={profileHref}
-                    role="menuitem"
-                    onClick={closeMenus}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
-                  >
-                    <UserRound size={17} /> My Profile
-                  </Link>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleSignOut}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10"
-                  >
-                    <LogOut size={17} /> Sign Out
-                  </button>
+                  {profileMenu}
                 </div>
               )}
             </div>
@@ -199,6 +206,43 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        {!isPending && session && (
+          <div className="relative lg:hidden">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setMenuOpen((open) => !open);
+              }}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label={`Open ${name}'s profile menu`}
+              title={name}
+              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[#CCFF00]/30 bg-[#12151A] text-sm font-bold text-[#CCFF00] transition hover:border-[#CCFF00]"
+            >
+              {image ? (
+                <span
+                  aria-label={`${name} profile image`}
+                  role="img"
+                  className="h-full w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
+                />
+              ) : (
+                initials || <UserRound size={18} />
+              )}
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                aria-label="Profile menu"
+                className="absolute right-0 top-[calc(100%+0.65rem)] z-[60] w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#292D35] bg-[#12151A] p-2 shadow-2xl shadow-black/50"
+              >
+                {profileMenu}
+              </div>
+            )}
+          </div>
+        )}
 
         <button
           type="button"
@@ -235,70 +279,22 @@ export default function Navbar() {
               ))}
             </div>
 
-            {!isPending && (
-              <div className="mt-3 border-t border-[#292D35] pt-3">
-                {session ? (
-                  <>
-                    <div className="mb-1 flex items-center gap-3 px-3 pb-2">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 text-xs font-bold text-[#CCFF00]">
-                        {image ? (
-                          <span
-                            aria-label={`${name} profile image`}
-                            role="img"
-                            className="h-full w-full bg-cover bg-center"
-                            style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
-                          />
-                        ) : (
-                          initials || <UserRound size={16} />
-                        )}
-                      </span>
-                      <span className="text-xs font-medium text-zinc-400">
-                        {isAdmin ? "Administrator" : "Member account"}
-                      </span>
-                    </div>
-                    <Link
-                      href={dashboardHref}
-                      onClick={closeMenus}
-                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
-                    >
-                      {isAdmin ? <ShieldCheck size={17} /> : <LayoutDashboard size={17} />}
-                      {dashboardLabel}
-                    </Link>
-                    <Link
-                      href={profileHref}
-                      onClick={closeMenus}
-                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-[#CCFF00]"
-                    >
-                      <UserRound size={17} />
-                      My Profile
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-red-400 transition hover:bg-red-500/10"
-                    >
-                      <LogOut size={17} />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link
-                      href="/login"
-                      onClick={closeMenus}
-                      className="flex min-h-11 items-center justify-center rounded-lg border border-[#292D35] px-4 text-sm font-semibold text-white transition hover:border-[#CCFF00] hover:text-[#CCFF00]"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      href="/signup"
-                      onClick={closeMenus}
-                      className="flex min-h-11 items-center justify-center rounded-lg bg-[#CCFF00] px-4 text-sm font-bold text-[#0B0D10] transition hover:bg-[#b8e600]"
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                )}
+            {!isPending && !session && (
+              <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#292D35] pt-3">
+                <Link
+                  href="/login"
+                  onClick={closeMenus}
+                  className="flex min-h-11 items-center justify-center rounded-lg border border-[#292D35] px-4 text-sm font-semibold text-white transition hover:border-[#CCFF00] hover:text-[#CCFF00]"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={closeMenus}
+                  className="flex min-h-11 items-center justify-center rounded-lg bg-[#CCFF00] px-4 text-sm font-bold text-[#0B0D10] transition hover:bg-[#b8e600]"
+                >
+                  Get Started
+                </Link>
               </div>
             )}
           </nav>

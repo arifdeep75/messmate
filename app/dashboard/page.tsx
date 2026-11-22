@@ -63,7 +63,13 @@ export default async function DashboardPage() {
 
   const stats = [
     { title: "Total Meals", value: String(mealCount), description: `${lunchCount} lunch · ${dinnerCount} dinner`, icon: Utensils },
-    { title: "Total Deposit", value: `৳ ${depositTotal.toLocaleString("en-BD")}`, description: "Current month", icon: Wallet },
+    { title: "This Month's Deposit", value: `৳ ${depositTotal.toLocaleString("en-BD")}`, description: "Your deposits this month", icon: Wallet },
+    {
+      title: "Meal Expense",
+      value: `৳ ${mealCost.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      description: `${mealCount} meals × ৳ ${monthlySummary.mealRate.toFixed(2)} per meal`,
+      icon: ShoppingBasket,
+    },
     { title: "Current Balance", value: `৳ ${currentBalance.toLocaleString("en-BD")}`, description: "Including previous balance", icon: TrendingUp },
   ];
 
@@ -131,7 +137,7 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {stats.map((stat) => {
               const Icon = stat.icon;
 
