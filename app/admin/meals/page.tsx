@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import clientPromise from "@/lib/mongo";
+import { dhakaDateString, monthRange } from "@/lib/messmate";
 import MealManagementClient from "@/components/admin/meal-management-client";
 import { ArrowLeft, CalendarDays, Utensils } from "lucide-react";
 
@@ -33,13 +34,13 @@ export default async function MealManagementPage() {
     name: member.name as string,
   }));
 
-  const today = new Date().toLocaleDateString("en-CA", {
-    timeZone: "Asia/Dhaka",
-  });
+  const now = new Date();
+  const today = dhakaDateString(now);
+  const { start, end } = monthRange(now);
 
   const mealDocuments = await db
     .collection("meals")
-    .find({ date: today })
+    .find({ date: { $gte: start, $lte: end } })
     .toArray();
 
   const initialMeals = mealDocuments
@@ -48,6 +49,7 @@ export default async function MealManagementPage() {
     )
     .map((meal) => ({
       memberId: meal.memberId as string,
+      date: meal.date as string,
       lunch: meal.lunch as boolean,
       dinner: meal.dinner as boolean,
     }));

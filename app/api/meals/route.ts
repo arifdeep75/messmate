@@ -7,8 +7,61 @@ import { z } from "zod";
 
 const DB_NAME = "messmate";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const month = url.searchParams.get("month");
+
+    if (month !== null) {
+      const session = await getCurrentSession(await headers());
+
+      if (!session) {
+        return NextResponse.json(
+          { message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+
+      if (session.user.role !== "admin") {
+        return NextResponse.json(
+          { message: "Admin access required" },
+          { status: 403 }
+        );
+      }
+
+      const parsedMonth = z.string()
+        .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+        .safeParse(month);
+
+      if (!parsedMonth.success) {
+        return NextResponse.json(
+          { message: "Invalid month" },
+          { status: 400 }
+        );
+      }
+
+      const [year, monthNumber] = month.split("-").map(Number);
+      const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+      const start = `${month}-01`;
+      const end = `${month}-${String(lastDay).padStart(2, "0")}`;
+
+      const client = await clientPromise;
+      const meals = await client
+        .db(DB_NAME)
+        .collection("meals")
+        .find({ date: { $gte: start, $lte: end } })
+        .toArray();
+
+      return NextResponse.json({
+        meals: meals.map((meal) => ({
+          memberId: meal.memberId,
+          date: meal.date,
+          lunch: Boolean(meal.lunch),
+          dinner: Boolean(meal.dinner),
+        })),
+      });
+    }
+
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const today = new Intl.DateTimeFormat("en-CA", {
