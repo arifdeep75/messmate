@@ -9,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import GoogleAuthButton from "@/components/google-auth-button";
 import {
   UserRound,
   Mail,
@@ -249,6 +250,13 @@ export default function SignupPage() {
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-zinc-600">
+            <span className="h-px flex-1 bg-[#292D35]" />
+            OR
+            <span className="h-px flex-1 bg-[#292D35]" />
+          </div>
+          <GoogleAuthButton />
 
           <div className="my-7 border-t border-[#292D35]" />
 

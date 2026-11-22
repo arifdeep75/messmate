@@ -16,6 +16,16 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Google sign-in
+
+Configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the local environment and the deployment environment. In Google Cloud Console, add this authorized redirect URI:
+
+```text
+http://localhost:3000/api/auth/callback/google
+```
+
+For production, use `https://<your-domain>/api/auth/callback/google` and set `BETTER_AUTH_URL` to that production origin. New Google accounts are created as pending regular members; the Google flow never grants admin role.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

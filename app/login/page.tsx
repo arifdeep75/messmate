@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import GoogleAuthButton from "@/components/google-auth-button";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -145,6 +146,13 @@ function LoginForm() {
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-zinc-600">
+            <span className="h-px flex-1 bg-[#292D35]" />
+            OR
+            <span className="h-px flex-1 bg-[#292D35]" />
+          </div>
+          <GoogleAuthButton />
 
           <div className="my-7 border-t border-[#292D35]" />
 
