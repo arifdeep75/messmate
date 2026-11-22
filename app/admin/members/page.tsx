@@ -59,7 +59,7 @@ export default function AdminMembersPage() {
       const response = await fetch("/api/admin/members", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(confirm),
+        body: JSON.stringify({ userId: confirm.id, action: confirm.action }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Action failed.");
